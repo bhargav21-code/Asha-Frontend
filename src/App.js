@@ -11,6 +11,7 @@ import AdminWomen from './pages/admin/AdminWomen';
 import AdminChildren from './pages/admin/AdminChildren';
 import AdminASHA from './pages/admin/AdminASHA';
 import AdminAnalytics from './pages/admin/AdminAnalytics';
+import AdminUserManagement from './pages/admin/AdminUserManagement';
 
 import AshaLayout from './components/asha/AshaLayout';
 import AshaDashboard from './pages/asha/AshaDashboard';
@@ -54,6 +55,7 @@ export default function App() {
               <Route path="children" element={<AdminChildren />} />
               <Route path="asha-workers" element={<AdminASHA />} />
               <Route path="analytics" element={<AdminAnalytics />} />
+              <Route path="user-management" element={<AdminUserManagement />} />
             </Route>
 
             {/* ASHA Routes */}

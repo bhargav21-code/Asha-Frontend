@@ -8,7 +8,8 @@ const NAV = [
   { to: '/admin/women',        label: 'Pregnant Women', icon: '🤰' },
   { to: '/admin/children',     label: 'Children',     icon: '👶' },
   { to: '/admin/asha-workers', label: 'ASHA Workers', icon: '👩‍⚕️' },
-  { to: '/admin/analytics',    label: 'Analytics',    icon: '📊' },
+  { to: '/admin/analytics',      label: 'Analytics',       icon: '📊' },
+  { to: '/admin/user-management', label: 'User Management', icon: '👥' },
 ];
 
 export default function AdminLayout() {
