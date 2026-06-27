@@ -277,8 +277,8 @@ function RegisterForm({ setView }) {
 //  FORGOT PASSWORD FORM (OTP via mobile)
 // ═══════════════════════════════════════════════════════════════
 function ForgotForm({ setView }) {
-  const [step, setStep]     = useState(1); // 1=enter phone, 2=enter OTP+new pw
-  const [phone, setPhone]   = useState('');
+  const [step, setStep]     = useState(1);
+  const [email, setEmail]   = useState('');
   const [otp, setOtp]       = useState('');
   const [newPw, setNewPw]   = useState('');
   const [error, setError]   = useState('');
@@ -288,19 +288,19 @@ function ForgotForm({ setView }) {
   const sendOTP = async (e) => {
     e.preventDefault(); setError(''); setLoading(true);
     try {
-      await api.post('/auth/forgot-password', { phone });
-      setInfo('OTP sent to your registered mobile number.');
+      await api.post('/auth/forgot-password', { email });
+      setInfo('OTP sent to your email address. Check your inbox.');
       setStep(2);
     } catch (err) {
-      setError(err.response?.data?.message || 'No account found with this mobile number.');
+      setError(err.response?.data?.message || 'No account found with this email.');
     } finally { setLoading(false); }
   };
 
   const verifyOTP = async (e) => {
     e.preventDefault(); setError(''); setLoading(true);
     try {
-      await api.post('/auth/verify-otp', { phone, otp, new_password: newPw });
-      setInfo('Password reset successfully! You can now log in.');
+      await api.post('/auth/verify-otp', { email, otp, new_password: newPw });
+      setInfo('Password reset successfully! You can now login.');
       setTimeout(() => setView(VIEWS.LOGIN), 2000);
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid or expired OTP.');
@@ -315,9 +315,10 @@ function ForgotForm({ setView }) {
 
       {step === 1 && (
         <form onSubmit={sendOTP} className="space-y-4">
-          <Field label="Registered Mobile Number">
-            <input type="tel" className={inputCls} required placeholder="Enter your mobile number"
-              value={phone} onChange={e => setPhone(e.target.value)} />
+          <Field label="Registered Email Address">
+            <input type="email" className={inputCls} required
+              placeholder="Enter your email address"
+              value={email} onChange={e => setEmail(e.target.value)} />
           </Field>
           <button type="submit" disabled={loading}
             className="w-full bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-lg font-semibold disabled:opacity-60">
@@ -328,13 +329,15 @@ function ForgotForm({ setView }) {
 
       {step === 2 && (
         <form onSubmit={verifyOTP} className="space-y-4">
-          <Field label="Enter OTP">
-            <input type="text" className={inputCls} required placeholder="6-digit OTP"
-              maxLength={6} value={otp} onChange={e => setOtp(e.target.value)} />
+          <Field label="Enter OTP (check your email)">
+            <input type="text" className={inputCls} required
+              placeholder="6-digit OTP" maxLength={6}
+              value={otp} onChange={e => setOtp(e.target.value)} />
           </Field>
           <Field label="New Password">
             <input type="password" className={inputCls} required minLength={6}
-              placeholder="Min 6 characters" value={newPw} onChange={e => setNewPw(e.target.value)} />
+              placeholder="Min 6 characters"
+              value={newPw} onChange={e => setNewPw(e.target.value)} />
           </Field>
           <button type="submit" disabled={loading}
             className="w-full bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-lg font-semibold disabled:opacity-60">
