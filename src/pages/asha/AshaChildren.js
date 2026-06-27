@@ -1,3 +1,4 @@
+import { ALL_VILLAGES } from '../../utils/villages';
 import api from '../../utils/api';
 import React, { useEffect, useState } from 'react';
 import { PageHeader, Spinner, NutritionBadge, Modal, FormField, Pagination, EmptyState, inputCls, selectCls } from '../../components/common/UI';
@@ -109,7 +110,7 @@ export default function AshaChildren() {
             <FormField label="Village" required>
               <select className={selectCls} value={form.village} onChange={e => set('village', e.target.value)} required>
                 <option value="">Select village</option>
-                {user?.assigned_villages?.map(v => <option key={v} value={v}>{v}</option>)}
+                {ALL_VILLAGES.map(v => <option key={v} value={v}>{v}</option>)}
               </select>
             </FormField>
           </div>

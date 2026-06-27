@@ -1,16 +1,8 @@
+import { ALL_VILLAGES } from '../../utils/villages';
 import React, { useEffect, useState } from 'react';
 import { PageHeader, Spinner, PriorityBadge, Modal, FormField, Pagination, EmptyState, inputCls, selectCls } from '../../components/common/UI';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
-
-const ALL_VILLAGES = [
-  'Kharel', 'Nogama', 'Tankal', 'Minkachch', 'Baroliya',
-  'Pipaldhara', 'Dhanori', 'Changa', 'Vagarwadi Vanzana',
-  'Ranverikhurd', 'Kharoli', 'Ranverikalla', 'Kangvai',
-  'Chhabdi', 'Bodwank', 'Jogwad', 'Chitali', 'Saraiya',
-  'Gandeva Patel Faliya', 'Gandeva', 'Endhal', 'Duwada',
-  'Khergam', 'Khaperia', 'Matwad',
-];
 
 const EMPTY = {
   target_individual_name: '', visit_type: 'General', village: '',

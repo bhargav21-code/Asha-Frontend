@@ -1,4 +1,5 @@
 import api from '../../utils/api';
+import { ALL_VILLAGES } from '../../utils/villages';
 import React, { useEffect, useState } from 'react';
 import {
   PageHeader, Spinner, Modal, FormField,
@@ -373,7 +374,7 @@ export default function AshaAnganwadi() {
             <FormField label="Village" required>
               <select className={selectCls} value={form.village} onChange={e => setF('village', e.target.value)} required>
                 <option value="">Select village</option>
-                {user?.assigned_villages?.map(v => <option key={v} value={v}>{v}</option>)}
+                {ALL_VILLAGES.map(v => <option key={v} value={v}>{v}</option>)}
               </select>
             </FormField>
             <FormField label="Anganwadi Name" required>
