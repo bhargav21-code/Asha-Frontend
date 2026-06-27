@@ -3,6 +3,7 @@ import {
   PageHeader, Spinner, Modal, FormField, EmptyState, inputCls, selectCls
 } from '../../components/common/UI';
 import api from '../../utils/api';
+import { ALL_VILLAGES } from '../../utils/villages';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -62,6 +63,113 @@ function PriorityDot({ priority }) {
   return <span className={`inline-block w-2.5 h-2.5 rounded-full ${PRIORITY_DOT[priority] || 'bg-gray-400'}`} />;
 }
 
+// ── FollowUpForm — OUTSIDE main component to prevent focus loss ───────────────
+function FollowUpForm({ form, setF, error, saving, onSubmit, submitLabel, onCancel }) {
+  return (
+    <form onSubmit={onSubmit} className="space-y-4">
+      {error && <div className="bg-red-50 text-red-600 text-sm rounded-lg p-3">{error}</div>}
+
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Patient Information</p>
+      <div className="grid grid-cols-2 gap-3">
+        <FormField label="Patient Name" required>
+          <input className={inputCls} required value={form.patient_name} onChange={e => setF('patient_name', e.target.value)} />
+        </FormField>
+        <FormField label="Age">
+          <input type="number" className={inputCls} value={form.age} onChange={e => setF('age', e.target.value)} />
+        </FormField>
+        <FormField label="Gender">
+          <select className={selectCls} value={form.gender} onChange={e => setF('gender', e.target.value)}>
+            <option>Female</option><option>Male</option><option>Other</option>
+          </select>
+        </FormField>
+        <FormField label="Village">
+          <select className={selectCls} value={form.village} onChange={e => setF('village', e.target.value)}>
+            <option value="">Select village</option>
+            {ALL_VILLAGES.map(v => <option key={v} value={v}>{v}</option>)}
+          </select>
+        </FormField>
+        <FormField label="Mobile Number">
+          <input className={inputCls} value={form.mobile_number} onChange={e => setF('mobile_number', e.target.value)} />
+        </FormField>
+      </div>
+
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-1">Disease Information</p>
+      <div className="grid grid-cols-2 gap-3">
+        <FormField label="Disease Name">
+          <input className={inputCls} value={form.disease_name} onChange={e => setF('disease_name', e.target.value)} />
+        </FormField>
+        <FormField label="Disease Category">
+          <select className={selectCls} value={form.disease_category} onChange={e => setF('disease_category', e.target.value)}>
+            {['Maternal','Child','Communicable','Non-Communicable','Nutritional','Other'].map(c => <option key={c}>{c}</option>)}
+          </select>
+        </FormField>
+        <FormField label="Current Health Status">
+          <select className={selectCls} value={form.current_health_status} onChange={e => setF('current_health_status', e.target.value)}>
+            {['Critical','Serious','Stable','Improving','Recovered'].map(s => <option key={s}>{s}</option>)}
+          </select>
+        </FormField>
+      </div>
+      <FormField label="Symptoms">
+        <input className={inputCls} placeholder="Comma-separated symptoms..." value={form.symptoms} onChange={e => setF('symptoms', e.target.value)} />
+      </FormField>
+      <FormField label="Description">
+        <textarea rows={2} className={inputCls} value={form.description} onChange={e => setF('description', e.target.value)} />
+      </FormField>
+
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-1">Visit Information</p>
+      <div className="grid grid-cols-2 gap-3">
+        <FormField label="Last Visit Date">
+          <input type="date" className={inputCls} value={form.last_visit_date} onChange={e => setF('last_visit_date', e.target.value)} />
+        </FormField>
+        <FormField label="Next Follow-Up Date" required>
+          <input type="date" className={inputCls} required value={form.next_followup_date} onChange={e => setF('next_followup_date', e.target.value)} />
+        </FormField>
+      </div>
+
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-1">Treatment Tracking</p>
+      <div className="grid grid-cols-2 gap-3">
+        <FormField label="Medicine Prescribed">
+          <input className={inputCls} value={form.medicine_prescribed} onChange={e => setF('medicine_prescribed', e.target.value)} />
+        </FormField>
+        <FormField label="Hospital Visit Status">
+          <select className={selectCls} value={form.hospital_visit_status} onChange={e => setF('hospital_visit_status', e.target.value)}>
+            {['Not Required','Referred','Visited','Admitted','Discharged'].map(s => <option key={s}>{s}</option>)}
+          </select>
+        </FormField>
+        <FormField label="Referral Information">
+          <input className={inputCls} value={form.referral_information} onChange={e => setF('referral_information', e.target.value)} />
+        </FormField>
+      </div>
+      <FormField label="Treatment Notes">
+        <textarea rows={2} className={inputCls} value={form.treatment_notes} onChange={e => setF('treatment_notes', e.target.value)} />
+      </FormField>
+
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-1">Status & Priority</p>
+      <div className="grid grid-cols-2 gap-3">
+        <FormField label="Follow-Up Status">
+          <select className={selectCls} value={form.status} onChange={e => setF('status', e.target.value)}>
+            {['Pending','Completed','Missed','Rescheduled'].map(s => <option key={s}>{s}</option>)}
+          </select>
+        </FormField>
+        <FormField label="Priority">
+          <select className={selectCls} value={form.priority} onChange={e => setF('priority', e.target.value)}>
+            <option>High</option><option>Medium</option><option>Low</option>
+          </select>
+        </FormField>
+      </div>
+
+      <div className="flex gap-3 pt-2">
+        <button type="button" onClick={onCancel}
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+        <button type="submit" disabled={saving}
+          className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm disabled:opacity-60">
+          {saving ? 'Saving...' : submitLabel}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 // ── Calendar Component ────────────────────────────────────────────────────────
 function Calendar({ events, onDateClick, viewMode, setViewMode }) {
   const today = new Date();
@@ -70,11 +178,9 @@ function Calendar({ events, onDateClick, viewMode, setViewMode }) {
   const prevMonth = () => setCurrent(c => c.month === 0 ? { year: c.year - 1, month: 11 } : { ...c, month: c.month - 1 });
   const nextMonth = () => setCurrent(c => c.month === 11 ? { year: c.year + 1, month: 0 } : { ...c, month: c.month + 1 });
 
-  // Build calendar grid
   const firstDay = new Date(current.year, current.month, 1).getDay();
   const daysInMonth = new Date(current.year, current.month + 1, 0).getDate();
 
-  // Map events by date string
   const eventMap = {};
   events.forEach(e => {
     const d = new Date(e.next_followup_date);
@@ -95,7 +201,6 @@ function Calendar({ events, onDateClick, viewMode, setViewMode }) {
     return eventMap[key] || [];
   };
 
-  // Weekly view: get current week days
   const getWeekDays = () => {
     const startOfWeek = new Date(today);
     startOfWeek.setDate(today.getDate() - today.getDay());
@@ -108,7 +213,6 @@ function Calendar({ events, onDateClick, viewMode, setViewMode }) {
 
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-      {/* Calendar Header */}
       <div className="bg-green-700 text-white px-4 py-3 flex items-center justify-between">
         <button onClick={prevMonth} className="p-1 hover:bg-green-600 rounded-lg text-lg leading-none">‹</button>
         <div className="flex items-center gap-3">
@@ -125,7 +229,6 @@ function Calendar({ events, onDateClick, viewMode, setViewMode }) {
         <button onClick={nextMonth} className="p-1 hover:bg-green-600 rounded-lg text-lg leading-none">›</button>
       </div>
 
-      {/* Legend */}
       <div className="px-4 py-2 bg-gray-50 border-b flex flex-wrap gap-3 text-xs text-gray-600">
         {[['bg-red-500','High Priority'],['bg-yellow-400','Pending'],['bg-green-500','Completed'],['bg-blue-500','Rescheduled']].map(([cls, label]) => (
           <span key={label} className="flex items-center gap-1">
@@ -136,13 +239,11 @@ function Calendar({ events, onDateClick, viewMode, setViewMode }) {
 
       {viewMode === 'Monthly' && (
         <div className="p-3">
-          {/* Day headers */}
           <div className="grid grid-cols-7 mb-1">
             {DAYS.map(d => (
               <div key={d} className="text-center text-xs font-semibold text-gray-500 py-1">{d}</div>
             ))}
           </div>
-          {/* Day cells */}
           <div className="grid grid-cols-7 gap-1">
             {cells.map((day, idx) => {
               if (!day) return <div key={`empty-${idx}`} />;
@@ -227,15 +328,13 @@ export default function AshaFollowUps() {
   const [records, setRecords]   = useState([]);
   const [calEvents, setCalEvents] = useState([]);
   const [loading, setLoading]   = useState(true);
-  const [activeTab, setActiveTab] = useState('list'); // 'list' | 'calendar'
+  const [activeTab, setActiveTab] = useState('list');
   const [calendarView, setCalendarView] = useState('Monthly');
 
-  // filters
   const [filterStatus,   setFilterStatus]   = useState('');
   const [filterPriority, setFilterPriority] = useState('');
   const [search, setSearch]                 = useState('');
 
-  // modals
   const [showAddModal,     setShowAddModal]     = useState(false);
   const [showEditModal,    setShowEditModal]     = useState(false);
   const [showDetailModal,  setShowDetailModal]   = useState(false);
@@ -250,7 +349,6 @@ export default function AshaFollowUps() {
   const [saving, setSaving]     = useState(false);
   const [error, setError]       = useState('');
 
-  // ── fetch ──
   const fetchRecords = useCallback(async () => {
     setLoading(true);
     try {
@@ -266,8 +364,7 @@ export default function AshaFollowUps() {
 
   const fetchCalendar = useCallback(async () => {
     const now = new Date();
-    const r = await api.get('/followups/calendar', { params: { year: now.getFullYear(), month: now.getMonth() + 1 } });
-    // Also fetch next month
+    const r  = await api.get('/followups/calendar', { params: { year: now.getFullYear(), month: now.getMonth() + 1 } });
     const r2 = await api.get('/followups/calendar', { params: { year: now.getFullYear(), month: now.getMonth() + 2 } });
     setCalEvents([...(r.data.data || []), ...(r2.data.data || [])]);
   }, []);
@@ -278,7 +375,6 @@ export default function AshaFollowUps() {
   const setF  = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const setHF = (k, v) => setHistForm(f => ({ ...f, [k]: v }));
 
-  // ── Counts for tabs ──
   const counts = {
     All:         records.length,
     Pending:     records.filter(r => r.status === 'Pending').length,
@@ -287,7 +383,6 @@ export default function AshaFollowUps() {
     Rescheduled: records.filter(r => r.status === 'Rescheduled').length,
   };
 
-  // ── ADD ──
   const handleAdd = async (e) => {
     e.preventDefault(); setError(''); setSaving(true);
     try {
@@ -304,7 +399,6 @@ export default function AshaFollowUps() {
     finally { setSaving(false); }
   };
 
-  // ── EDIT ──
   const openEdit = (rec) => {
     setSelected(rec);
     setForm({
@@ -315,9 +409,9 @@ export default function AshaFollowUps() {
       current_health_status: rec.current_health_status || 'Stable',
       last_visit_date:    rec.last_visit_date    ? rec.last_visit_date.split('T')[0]    : '',
       next_followup_date: rec.next_followup_date ? rec.next_followup_date.split('T')[0] : '',
-      medicine_prescribed: rec.medicine_prescribed || '',
-      treatment_notes:     rec.treatment_notes    || '',
-      referral_information:rec.referral_information || '',
+      medicine_prescribed:  rec.medicine_prescribed  || '',
+      treatment_notes:      rec.treatment_notes      || '',
+      referral_information: rec.referral_information || '',
       hospital_visit_status: rec.hospital_visit_status || 'Not Required',
       status: rec.status || 'Pending', priority: rec.priority || 'Medium',
     });
@@ -338,8 +432,9 @@ export default function AshaFollowUps() {
     finally { setSaving(false); }
   };
 
-  // ── ADD VISIT HISTORY ──
-  const openHistory = (rec) => { setSelected(rec); setHistForm({ ...EMPTY_HISTORY }); setError(''); setShowHistoryModal(true); };
+  const openHistory = (rec) => {
+    setSelected(rec); setHistForm({ ...EMPTY_HISTORY }); setError(''); setShowHistoryModal(true);
+  };
 
   const handleAddHistory = async (e) => {
     e.preventDefault(); setError(''); setSaving(true);
@@ -354,7 +449,6 @@ export default function AshaFollowUps() {
     finally { setSaving(false); }
   };
 
-  // ── DELETE ──
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this follow-up record?')) return;
     await api.delete(`/followups/${id}`);
@@ -362,125 +456,20 @@ export default function AshaFollowUps() {
     if (showDetailModal) setShowDetailModal(false);
   };
 
-  // ── Calendar date click ──
   const handleDateClick = (events, dateLabel) => {
     setCalModalEvents(events);
     setCalModalDate(dateLabel);
     setShowCalModal(true);
   };
 
-  // ── Follow-Up Form (shared Add/Edit) ──
-  const FollowUpForm = ({ onSubmit, submitLabel }) => (
-    <form onSubmit={onSubmit} className="space-y-4">
-      {error && <div className="bg-red-50 text-red-600 text-sm rounded-lg p-3">{error}</div>}
-
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Patient Information</p>
-      <div className="grid grid-cols-2 gap-3">
-        <FormField label="Patient Name" required>
-          <input className={inputCls} required value={form.patient_name} onChange={e => setF('patient_name', e.target.value)} />
-        </FormField>
-        <FormField label="Age">
-          <input type="number" className={inputCls} value={form.age} onChange={e => setF('age', e.target.value)} />
-        </FormField>
-        <FormField label="Gender">
-          <select className={selectCls} value={form.gender} onChange={e => setF('gender', e.target.value)}>
-            <option>Female</option><option>Male</option><option>Other</option>
-          </select>
-        </FormField>
-        <FormField label="Village">
-          <input className={inputCls} value={form.village} onChange={e => setF('village', e.target.value)} />
-        </FormField>
-        <FormField label="Mobile Number">
-          <input className={inputCls} value={form.mobile_number} onChange={e => setF('mobile_number', e.target.value)} />
-        </FormField>
-      </div>
-
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-1">Disease Information</p>
-      <div className="grid grid-cols-2 gap-3">
-        <FormField label="Disease Name">
-          <input className={inputCls} value={form.disease_name} onChange={e => setF('disease_name', e.target.value)} />
-        </FormField>
-        <FormField label="Disease Category">
-          <select className={selectCls} value={form.disease_category} onChange={e => setF('disease_category', e.target.value)}>
-            {['Maternal','Child','Communicable','Non-Communicable','Nutritional','Other'].map(c => <option key={c}>{c}</option>)}
-          </select>
-        </FormField>
-        <FormField label="Current Health Status">
-          <select className={selectCls} value={form.current_health_status} onChange={e => setF('current_health_status', e.target.value)}>
-            {['Critical','Serious','Stable','Improving','Recovered'].map(s => <option key={s}>{s}</option>)}
-          </select>
-        </FormField>
-      </div>
-      <FormField label="Symptoms">
-        <input className={inputCls} placeholder="Comma-separated symptoms..." value={form.symptoms} onChange={e => setF('symptoms', e.target.value)} />
-      </FormField>
-      <FormField label="Description">
-        <textarea rows={2} className={inputCls} value={form.description} onChange={e => setF('description', e.target.value)} />
-      </FormField>
-
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-1">Visit Information</p>
-      <div className="grid grid-cols-2 gap-3">
-        <FormField label="Last Visit Date">
-          <input type="date" className={inputCls} value={form.last_visit_date} onChange={e => setF('last_visit_date', e.target.value)} />
-        </FormField>
-        <FormField label="Next Follow-Up Date" required>
-          <input type="date" className={inputCls} required value={form.next_followup_date} onChange={e => setF('next_followup_date', e.target.value)} />
-        </FormField>
-      </div>
-
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-1">Treatment Tracking</p>
-      <div className="grid grid-cols-2 gap-3">
-        <FormField label="Medicine Prescribed">
-          <input className={inputCls} value={form.medicine_prescribed} onChange={e => setF('medicine_prescribed', e.target.value)} />
-        </FormField>
-        <FormField label="Hospital Visit Status">
-          <select className={selectCls} value={form.hospital_visit_status} onChange={e => setF('hospital_visit_status', e.target.value)}>
-            {['Not Required','Referred','Visited','Admitted','Discharged'].map(s => <option key={s}>{s}</option>)}
-          </select>
-        </FormField>
-        <FormField label="Referral Information">
-          <input className={inputCls} value={form.referral_information} onChange={e => setF('referral_information', e.target.value)} />
-        </FormField>
-      </div>
-      <FormField label="Treatment Notes">
-        <textarea rows={2} className={inputCls} value={form.treatment_notes} onChange={e => setF('treatment_notes', e.target.value)} />
-      </FormField>
-
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-1">Status & Priority</p>
-      <div className="grid grid-cols-2 gap-3">
-        <FormField label="Follow-Up Status">
-          <select className={selectCls} value={form.status} onChange={e => setF('status', e.target.value)}>
-            {['Pending','Completed','Missed','Rescheduled'].map(s => <option key={s}>{s}</option>)}
-          </select>
-        </FormField>
-        <FormField label="Priority">
-          <select className={selectCls} value={form.priority} onChange={e => setF('priority', e.target.value)}>
-            <option>High</option><option>Medium</option><option>Low</option>
-          </select>
-        </FormField>
-      </div>
-
-      <div className="flex gap-3 pt-2">
-        <button type="button" onClick={() => { setShowAddModal(false); setShowEditModal(false); }}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
-        <button type="submit" disabled={saving}
-          className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm disabled:opacity-60">
-          {saving ? 'Saving...' : submitLabel}
-        </button>
-      </div>
-    </form>
-  );
-
-  // ── Summary cards ──
   const summaryData = [
-    { label: 'Total',       val: counts.All,         color: 'bg-blue-50 text-blue-700 border-blue-100',     dot: 'bg-blue-500' },
-    { label: 'Pending',     val: counts.Pending,     color: 'bg-yellow-50 text-yellow-700 border-yellow-100', dot: 'bg-yellow-400' },
-    { label: 'Completed',   val: counts.Completed,   color: 'bg-green-50 text-green-700 border-green-100',   dot: 'bg-green-500' },
-    { label: 'Missed',      val: counts.Missed,      color: 'bg-red-50 text-red-700 border-red-100',         dot: 'bg-red-500' },
-    { label: 'Rescheduled', val: counts.Rescheduled, color: 'bg-purple-50 text-purple-700 border-purple-100',dot: 'bg-purple-500' },
+    { label: 'Total',       val: counts.All,         color: 'bg-blue-50 text-blue-700 border-blue-100' },
+    { label: 'Pending',     val: counts.Pending,     color: 'bg-yellow-50 text-yellow-700 border-yellow-100' },
+    { label: 'Completed',   val: counts.Completed,   color: 'bg-green-50 text-green-700 border-green-100' },
+    { label: 'Missed',      val: counts.Missed,      color: 'bg-red-50 text-red-700 border-red-100' },
+    { label: 'Rescheduled', val: counts.Rescheduled, color: 'bg-purple-50 text-purple-700 border-purple-100' },
   ];
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div>
       <PageHeader
@@ -521,7 +510,6 @@ export default function AshaFollowUps() {
       {/* ── LIST VIEW ── */}
       {activeTab === 'list' && (
         <>
-          {/* Filters */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-4 flex flex-wrap gap-3">
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
@@ -571,25 +559,15 @@ export default function AshaFollowUps() {
                         </span>
                       </div>
                     </div>
-
-                    {/* Action buttons */}
                     <div className="flex flex-col gap-1.5 flex-shrink-0">
                       <button onClick={() => { setSelected(r); setShowDetailModal(true); }}
-                        className="px-3 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs rounded-lg border border-blue-200 font-medium">
-                        View
-                      </button>
+                        className="px-3 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs rounded-lg border border-blue-200 font-medium">View</button>
                       <button onClick={() => openEdit(r)}
-                        className="px-3 py-1 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 text-xs rounded-lg border border-yellow-200 font-medium">
-                        Edit
-                      </button>
+                        className="px-3 py-1 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 text-xs rounded-lg border border-yellow-200 font-medium">Edit</button>
                       <button onClick={() => openHistory(r)}
-                        className="px-3 py-1 bg-green-50 hover:bg-green-100 text-green-700 text-xs rounded-lg border border-green-200 font-medium">
-                        + Visit
-                      </button>
+                        className="px-3 py-1 bg-green-50 hover:bg-green-100 text-green-700 text-xs rounded-lg border border-green-200 font-medium">+ Visit</button>
                       <button onClick={() => handleDelete(r._id)}
-                        className="px-3 py-1 bg-red-50 hover:bg-red-100 text-red-700 text-xs rounded-lg border border-red-200 font-medium">
-                        Delete
-                      </button>
+                        className="px-3 py-1 bg-red-50 hover:bg-red-100 text-red-700 text-xs rounded-lg border border-red-200 font-medium">Delete</button>
                     </div>
                   </div>
                 </div>
@@ -606,19 +584,26 @@ export default function AshaFollowUps() {
 
       {/* ── ADD Modal ── */}
       <Modal open={showAddModal} onClose={() => setShowAddModal(false)} title="Add Follow-Up Record">
-        <FollowUpForm onSubmit={handleAdd} submitLabel="Add Follow-Up" />
+        <FollowUpForm
+          form={form} setF={setF} error={error} saving={saving}
+          onSubmit={handleAdd} submitLabel="Add Follow-Up"
+          onCancel={() => setShowAddModal(false)}
+        />
       </Modal>
 
       {/* ── EDIT Modal ── */}
       <Modal open={showEditModal} onClose={() => setShowEditModal(false)} title="Edit Follow-Up Record">
-        <FollowUpForm onSubmit={handleEdit} submitLabel="Save Changes" />
+        <FollowUpForm
+          form={form} setF={setF} error={error} saving={saving}
+          onSubmit={handleEdit} submitLabel="Save Changes"
+          onCancel={() => setShowEditModal(false)}
+        />
       </Modal>
 
-      {/* ── DETAIL Modal with Visit History Timeline ── */}
+      {/* ── DETAIL Modal ── */}
       <Modal open={showDetailModal} onClose={() => setShowDetailModal(false)} title="Follow-Up Details">
         {selected && (
           <div className="space-y-5">
-            {/* Patient Info */}
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div><p className="text-xs text-gray-400">Patient</p><p className="font-semibold">{selected.patient_name}</p></div>
               <div><p className="text-xs text-gray-400">Age / Gender</p><p className="font-semibold">{selected.age || '—'} yr · {selected.gender}</p></div>
@@ -637,7 +622,6 @@ export default function AshaFollowUps() {
             {selected.treatment_notes && <div className="bg-green-50 rounded-lg p-3 text-sm"><p className="text-xs text-gray-400 mb-1">Treatment Notes</p><p>{selected.treatment_notes}</p></div>}
             {selected.referral_information && <div className="bg-yellow-50 rounded-lg p-3 text-sm"><p className="text-xs text-gray-400 mb-1">Referral</p><p>{selected.referral_information}</p></div>}
 
-            {/* Visit History Timeline */}
             <div>
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm font-semibold text-gray-700">📅 Visit History Timeline</p>
