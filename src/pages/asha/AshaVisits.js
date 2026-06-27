@@ -3,6 +3,15 @@ import { PageHeader, Spinner, PriorityBadge, Modal, FormField, Pagination, Empty
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
 
+const ALL_VILLAGES = [
+  'Kharel', 'Nogama', 'Tankal', 'Minkachch', 'Baroliya',
+  'Pipaldhara', 'Dhanori', 'Changa', 'Vagarwadi Vanzana',
+  'Ranverikhurd', 'Kharoli', 'Ranverikalla', 'Kangvai',
+  'Chhabdi', 'Bodwank', 'Jogwad', 'Chitali', 'Saraiya',
+  'Gandeva Patel Faliya', 'Gandeva', 'Endhal', 'Duwada',
+  'Khergam', 'Khaperia', 'Matwad',
+];
+
 const EMPTY = {
   target_individual_name: '', visit_type: 'General', village: '',
   'metrics.weight': '', 'metrics.bp_sys': '', 'metrics.bp_dia': '',
@@ -124,7 +133,7 @@ export default function AshaVisits() {
             <FormField label="Village" required>
               <select className={selectCls} value={form.village} onChange={e => set('village', e.target.value)} required>
                 <option value="">Select village</option>
-                {user?.assigned_villages?.map(v => <option key={v} value={v}>{v}</option>)}
+                {ALL_VILLAGES.map(v => <option key={v} value={v}>{v}</option>)}
               </select>
             </FormField>
             <FormField label="Individual Name">
