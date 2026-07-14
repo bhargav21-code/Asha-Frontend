@@ -41,7 +41,10 @@ export default function AdminLayout() {
       {/* Desktop sidebar */}
       <aside className="hidden md:flex flex-col w-64 bg-blue-800 flex-shrink-0">
         <div className="px-4 pt-5 pb-3">
-          <h1 className="text-white font-bold text-lg">⚕ ASHA Admin</h1>
+         <h1 className="text-white font-bold text-base flex items-center gap-2">
+  <img src="/logo.svg" alt="Logo" style={{ width: '24px', height: '24px' }} />
+  ASHA Admin
+</h1>
           <p className="text-blue-300 text-xs">Health Management System</p>
         </div>
         <SidebarContent />
@@ -53,7 +56,10 @@ export default function AdminLayout() {
           <div className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
           <aside className="fixed left-0 top-0 bottom-0 w-64 bg-blue-800 z-50">
             <div className="px-4 pt-5 pb-3 flex items-center justify-between">
-              <h1 className="text-white font-bold text-lg">⚕ ASHA Admin</h1>
+              <h1 className="text-white font-bold text-base flex items-center gap-2">
+  <img src="/logo.svg" alt="Logo" style={{ width: '24px', height: '24px' }} />
+  ASHA Admin
+</h1>
               <button onClick={() => setSidebarOpen(false)} className="text-white text-xl">&times;</button>
             </div>
             <SidebarContent />

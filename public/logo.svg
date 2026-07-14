@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Solid Blue Background matching your admin sidebar -->
+  <circle cx="256" cy="256" r="256" fill="#2563EB" />
+  
+  <!-- Outer Community Bond Ring (with connecting nodes) -->
+  <circle cx="256" cy="256" r="210" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-dasharray="45 25" />
+  <circle cx="256" cy="256" r="190" fill="none" stroke="#FFFFFF" stroke-width="4" opacity="0.8" />
+
+  <!-- The Abstract 'A' -->
+  <path d="M256 100 L120 400 L170 400 L215 300 L297 300 L342 400 L392 400 Z" fill="#FFFFFF" />
+  <path d="M256 100 L195 240 L317 240 Z" fill="#2563EB" /> <!-- Cutout for the top of the A -->
+
+  <!-- EKG Heartbeat Line (acting as the crossbar of the 'A') -->
+  <path d="M100 300 L180 300 L205 250 L235 360 L275 180 L305 320 L325 300 L412 300" fill="none" stroke="#93C5FD" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- Mother and Child figure nested inside the 'A' -->
+  <!-- Mother's Head -->
+  <circle cx="256" cy="165" r="18" fill="#FFFFFF" />
+  <!-- Mother's Body curving around child -->
+  <path d="M236 230 C226 195 286 195 286 230 Z" fill="#FFFFFF" />
+  <!-- Child's Head -->
+  <circle cx="272" cy="205" r="10" fill="#93C5FD" />
+</svg>

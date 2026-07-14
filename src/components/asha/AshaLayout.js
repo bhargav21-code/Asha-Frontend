@@ -46,7 +46,10 @@ export default function AshaLayout() {
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       <aside className="hidden md:flex flex-col w-60 bg-green-800 flex-shrink-0">
         <div className="px-4 pt-5 pb-3">
-          <h1 className="text-white font-bold text-base">💚 ASHA Worker</h1>
+          <h1 className="text-white font-bold text-base flex items-center gap-2">
+  <img src="/logo.svg" alt="Logo" style={{ width: '24px', height: '24px' }} />
+  ASHA Worker
+</h1>
           <p className="text-green-300 text-xs">Health Monitoring</p>
         </div>
         <SidebarContent />
@@ -57,7 +60,10 @@ export default function AshaLayout() {
           <div className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
           <aside className="fixed left-0 top-0 bottom-0 w-60 bg-green-800 z-50">
             <div className="px-4 pt-5 pb-3 flex items-center justify-between">
-              <h1 className="text-white font-bold">💚 ASHA Worker</h1>
+              <h1 className="text-white font-bold flex items-center gap-2">
+  <img src="/logo.svg" alt="Logo" style={{ width: '24px', height: '24px' }} />
+  ASHA Worker
+</h1>
               <button onClick={() => setSidebarOpen(false)} className="text-white text-xl">&times;</button>
             </div>
             <SidebarContent />
