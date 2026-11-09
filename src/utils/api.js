@@ -28,7 +28,9 @@ function isTrustedApiRequest(config = {}) {
 
     return (
       target.origin === apiBase.origin &&
-      (target.pathname === trustedApiPath || target.pathname.startsWith(`${trustedApiPath}/`))
+      (trustedApiPath === '/' ||
+        target.pathname === trustedApiPath ||
+        target.pathname.startsWith(`${trustedApiPath}/`))
     );
   } catch {
     return false;
