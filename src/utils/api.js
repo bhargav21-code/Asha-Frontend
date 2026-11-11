@@ -85,6 +85,7 @@ api.interceptors.response.use(
       if (requestToken && currentToken && requestToken === currentToken) {
         safeStorageRemove('asha_token');
         safeStorageRemove('asha_user');
+        window.dispatchEvent(new Event('asha:session-expired'));
         if (window.location.pathname !== '/login') {
           window.location.replace('/login');
         }
