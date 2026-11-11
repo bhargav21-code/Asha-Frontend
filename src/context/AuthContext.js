@@ -1,7 +1,23 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import api from '../utils/api';
 
 const AuthContext = createContext(null);
+
+const getStoredToken = () => {
+  try {
+    return localStorage.getItem('asha_token');
+  } catch {
+    return null;
+  }
+};
+
+const removeStoredItem = (key) => {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Browser storage may be unavailable; in-memory state is still authoritative.
+  }
+};
 
 function normalizeUser(user) {
   if (
@@ -28,20 +44,16 @@ function normalizeUser(user) {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const sessionGeneration = useRef(0);
 
   useEffect(() => {
     let mounted = true;
-    let token = null;
+    const restoreGeneration = ++sessionGeneration.current;
+    const token = getStoredToken();
 
-    // Storage can be disabled by browser privacy settings or sandbox policies.
-    // In that case, fail closed and render the app as signed out.
-    try {
-      token = localStorage.getItem('asha_token');
-      localStorage.removeItem('asha_user');
-    } catch {
-      if (mounted) setLoading(false);
-      return () => { mounted = false; };
-    }
+    // Older versions cached the role-bearing user object in localStorage.
+    // Never use that client-controlled value to establish an authenticated session.
+    removeStoredItem('asha_user');
 
     if (!token) {
       setLoading(false);
@@ -50,21 +62,29 @@ export function AuthProvider({ children }) {
 
     api.get('/auth/me')
       .then(({ data }) => {
-        if (!mounted) return;
+        // Ignore stale restoration responses after login/logout or token replacement.
+        if (
+          !mounted ||
+          sessionGeneration.current !== restoreGeneration ||
+          getStoredToken() !== token
+        ) return;
+
         const verifiedUser = normalizeUser(data?.user);
         if (!verifiedUser) {
-          try {
-            localStorage.removeItem('asha_token');
-          } catch {
-            // The in-memory session is still cleared below.
-          }
+          removeStoredItem('asha_token');
           setUser(null);
           return;
         }
         setUser(verifiedUser);
       })
       .catch(() => {
-        if (mounted) setUser(null);
+        if (
+          mounted &&
+          sessionGeneration.current === restoreGeneration &&
+          getStoredToken() === token
+        ) {
+          setUser(null);
+        }
       })
       .finally(() => {
         if (mounted) setLoading(false);
@@ -74,7 +94,11 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (username, password) => {
+    const loginGeneration = ++sessionGeneration.current;
     const { data } = await api.post('/auth/login', { username, password });
+    if (sessionGeneration.current !== loginGeneration) {
+      throw new Error('Login was cancelled because the session changed. Please try again.');
+    }
     const authenticatedUser = normalizeUser(data?.user);
 
     if (!data?.token || !authenticatedUser) {
@@ -92,12 +116,9 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    try {
-      localStorage.removeItem('asha_token');
-      localStorage.removeItem('asha_user');
-    } catch {
-      // Clear the in-memory session even when browser storage is unavailable.
-    }
+    sessionGeneration.current += 1;
+    removeStoredItem('asha_token');
+    removeStoredItem('asha_user');
     setUser(null);
   };
 
