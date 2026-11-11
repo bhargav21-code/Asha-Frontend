@@ -72,10 +72,22 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401 && isTrustedApiRequest(err.config)) {
-      safeStorageRemove('asha_token');
-      safeStorageRemove('asha_user');
-      if (window.location.pathname !== '/login') {
-        window.location.replace('/login');
+      const headers = err.config?.headers;
+      const authorization = typeof headers?.get === 'function'
+        ? headers.get('Authorization')
+        : (headers?.Authorization || headers?.authorization);
+      const requestToken = typeof authorization === 'string' && authorization.startsWith('Bearer ')
+        ? authorization.slice(7)
+        : null;
+      const currentToken = safeStorageGet('asha_token');
+
+      // An old request must never clear a newer login's token.
+      if (requestToken && currentToken && requestToken === currentToken) {
+        safeStorageRemove('asha_token');
+        safeStorageRemove('asha_user');
+        if (window.location.pathname !== '/login') {
+          window.location.replace('/login');
+        }
       }
     }
     return Promise.reject(err);
