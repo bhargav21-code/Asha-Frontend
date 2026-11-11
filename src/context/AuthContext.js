@@ -48,6 +48,14 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     let mounted = true;
+    const handleSessionExpired = () => {
+      sessionGeneration.current += 1;
+      removeStoredItem('asha_token');
+      removeStoredItem('asha_user');
+      setUser(null);
+    };
+    window.addEventListener('asha:session-expired', handleSessionExpired);
+
     const restoreGeneration = ++sessionGeneration.current;
     const token = getStoredToken();
 
@@ -90,7 +98,10 @@ export function AuthProvider({ children }) {
         if (mounted) setLoading(false);
       });
 
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+      window.removeEventListener('asha:session-expired', handleSessionExpired);
+    };
   }, []);
 
   const login = async (username, password) => {
@@ -107,10 +118,10 @@ export function AuthProvider({ children }) {
 
     try {
       localStorage.setItem('asha_token', data.token);
-      localStorage.removeItem('asha_user');
     } catch {
       throw new Error('Browser storage is unavailable. Enable site storage and try again.');
     }
+    removeStoredItem('asha_user');
     setUser(authenticatedUser);
     return authenticatedUser;
   };
