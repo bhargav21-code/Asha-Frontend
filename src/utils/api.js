@@ -12,6 +12,22 @@ if (
   throw new Error('The production API must use HTTPS. Set REACT_APP_API_URL to an HTTPS URL.');
 }
 
+const safeStorageGet = (key) => {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+
+const safeStorageRemove = (key) => {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Storage may be disabled; request/session handling still fails closed.
+  }
+};
+
 const api = axios.create({ baseURL: apiBaseURL });
 
 function isTrustedApiRequest(config = {}) {
@@ -40,7 +56,7 @@ function isTrustedApiRequest(config = {}) {
 api.interceptors.request.use((config) => {
   const headers = config.headers || {};
   if (isTrustedApiRequest(config)) {
-    const token = localStorage.getItem('asha_token');
+    const token = safeStorageGet('asha_token');
     if (token) headers.Authorization = `Bearer ${token}`;
   } else if (typeof headers.delete === 'function') {
     headers.delete('Authorization');
@@ -56,8 +72,8 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401 && isTrustedApiRequest(err.config)) {
-      localStorage.removeItem('asha_token');
-      localStorage.removeItem('asha_user');
+      safeStorageRemove('asha_token');
+      safeStorageRemove('asha_user');
       if (window.location.pathname !== '/login') {
         window.location.replace('/login');
       }
