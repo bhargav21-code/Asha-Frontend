@@ -31,11 +31,17 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     let mounted = true;
-    const token = localStorage.getItem('asha_token');
+    let token = null;
 
-    // Older versions cached the role-bearing user object in localStorage.
-    // Never use that client-controlled value to establish an authenticated session.
-    localStorage.removeItem('asha_user');
+    // Storage can be disabled by browser privacy settings or sandbox policies.
+    // In that case, fail closed and render the app as signed out.
+    try {
+      token = localStorage.getItem('asha_token');
+      localStorage.removeItem('asha_user');
+    } catch {
+      if (mounted) setLoading(false);
+      return () => { mounted = false; };
+    }
 
     if (!token) {
       setLoading(false);
@@ -47,7 +53,11 @@ export function AuthProvider({ children }) {
         if (!mounted) return;
         const verifiedUser = normalizeUser(data?.user);
         if (!verifiedUser) {
-          localStorage.removeItem('asha_token');
+          try {
+            localStorage.removeItem('asha_token');
+          } catch {
+            // The in-memory session is still cleared below.
+          }
           setUser(null);
           return;
         }
@@ -71,15 +81,23 @@ export function AuthProvider({ children }) {
       throw new Error('The server returned an invalid login response.');
     }
 
-    localStorage.setItem('asha_token', data.token);
-    localStorage.removeItem('asha_user');
+    try {
+      localStorage.setItem('asha_token', data.token);
+      localStorage.removeItem('asha_user');
+    } catch {
+      throw new Error('Browser storage is unavailable. Enable site storage and try again.');
+    }
     setUser(authenticatedUser);
     return authenticatedUser;
   };
 
   const logout = () => {
-    localStorage.removeItem('asha_token');
-    localStorage.removeItem('asha_user');
+    try {
+      localStorage.removeItem('asha_token');
+      localStorage.removeItem('asha_user');
+    } catch {
+      // Clear the in-memory session even when browser storage is unavailable.
+    }
     setUser(null);
   };
 
