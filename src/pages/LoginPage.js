@@ -289,7 +289,7 @@ function ForgotForm({ setView }) {
     e.preventDefault(); setError(''); setLoading(true);
     try {
       await api.post('/auth/forgot-password', { email });
-      setInfo('OTP sent to your email address. Check your inbox.');
+      setInfo('If an account exists and is eligible, an OTP will be sent to the registered email. Check your inbox; you may need to wait before requesting another code.');
       setStep(2);
     } catch (err) {
       setError(err.response?.data?.message || 'No account found with this email.');
