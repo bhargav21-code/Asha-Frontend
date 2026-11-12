@@ -185,7 +185,11 @@ export default function AdminUserManagement() {
                         <div>
                           <p className="font-semibold text-gray-900">{u.name} <span className="font-normal text-gray-400">(@{u.username})</span></p>
                           <p className="text-sm text-blue-700 mt-1">
-                            Requesting to change <strong>{u.change_request.type}</strong> → <code className="bg-blue-50 px-1 rounded">{u.change_request.new_value}</code>
+                            {u.change_request.type === 'password' ? (
+                              <>Password change requested <span className="text-gray-500">(value hidden)</span></>
+                            ) : (
+                              <>Requesting to change <strong>{u.change_request.type}</strong> → <code className="bg-blue-50 px-1 rounded">{u.change_request.new_value}</code></>
+                            )}
                           </p>
                           <p className="text-xs text-gray-400 mt-1">
                             Requested: {new Date(u.change_request.requested_at).toLocaleString('en-IN')}
