@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - security-frontend-compatibility
+      - security-hardening
   pull_request:
     branches:
       - main
