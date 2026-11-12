@@ -44,6 +44,8 @@ function normalizeUser(user) {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [sessionCheckError, setSessionCheckError] = useState(false);
+  const [restoreAttempt, setRestoreAttempt] = useState(0);
   const sessionGeneration = useRef(0);
 
   useEffect(() => {
@@ -53,8 +55,12 @@ export function AuthProvider({ children }) {
       removeStoredItem('asha_token');
       removeStoredItem('asha_user');
       setUser(null);
+      setSessionCheckError(false);
+      setLoading(false);
     };
     window.addEventListener('asha:session-expired', handleSessionExpired);
+    setSessionCheckError(false);
+    setLoading(true);
 
     const restoreGeneration = ++sessionGeneration.current;
     const token = getStoredToken();
@@ -64,6 +70,8 @@ export function AuthProvider({ children }) {
     removeStoredItem('asha_user');
 
     if (!token) {
+      setUser(null);
+      setSessionCheckError(false);
       setLoading(false);
       return () => {
         mounted = false;
@@ -88,24 +96,34 @@ export function AuthProvider({ children }) {
         }
         setUser(verifiedUser);
       })
-      .catch(() => {
+      .catch((error) => {
         if (
-          mounted &&
-          sessionGeneration.current === restoreGeneration &&
-          getStoredToken() === token
-        ) {
-          setUser(null);
+          !mounted ||
+          sessionGeneration.current !== restoreGeneration ||
+          getStoredToken() !== token
+        ) return;
+
+        // Explicit authentication failures invalidate the saved session.
+        // Network/server failures are indeterminate: retain the token and offer retry.
+        if ([401, 403].includes(error.response?.status)) {
+          removeStoredItem('asha_token');
+          setSessionCheckError(false);
+        } else {
+          setSessionCheckError(true);
         }
+        setUser(null);
       })
       .finally(() => {
-        if (mounted) setLoading(false);
+        if (mounted && sessionGeneration.current === restoreGeneration) {
+          setLoading(false);
+        }
       });
 
     return () => {
       mounted = false;
       window.removeEventListener('asha:session-expired', handleSessionExpired);
     };
-  }, []);
+  }, [restoreAttempt]);
 
   const login = async (username, password) => {
     const loginGeneration = ++sessionGeneration.current;
@@ -126,7 +144,21 @@ export function AuthProvider({ children }) {
     }
     removeStoredItem('asha_user');
     setUser(authenticatedUser);
+    setSessionCheckError(false);
+    setLoading(false);
     return authenticatedUser;
+  };
+
+  const retrySessionRestore = () => {
+    if (!getStoredToken()) {
+      setUser(null);
+      setSessionCheckError(false);
+      setLoading(false);
+      return;
+    }
+    setSessionCheckError(false);
+    setLoading(true);
+    setRestoreAttempt((attempt) => attempt + 1);
   };
 
   const logout = () => {
@@ -134,10 +166,12 @@ export function AuthProvider({ children }) {
     removeStoredItem('asha_token');
     removeStoredItem('asha_user');
     setUser(null);
+    setSessionCheckError(false);
+    setLoading(false);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, loading, sessionCheckError, retrySessionRestore }}>
       {children}
     </AuthContext.Provider>
   );
