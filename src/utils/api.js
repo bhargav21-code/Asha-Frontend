@@ -30,18 +30,21 @@ const safeStorageRemove = (key) => {
 
 const api = axios.create({ baseURL: apiBaseURL });
 
+function resolveRequestTarget(config = {}) {
+  const requestBase = new URL(config.baseURL || apiBaseURL, window.location.origin);
+  const rawURL = config.url || '';
+  const absoluteURL = /^[a-z][a-z\d+.-]*:/i.test(rawURL) || rawURL.startsWith('//');
+  return absoluteURL
+    ? new URL(rawURL, requestBase)
+    : new URL(
+        `${requestBase.pathname.replace(/\/+$/, '')}/${rawURL.replace(/^\/+/, '')}`,
+        requestBase.origin
+      );
+}
+
 function isTrustedApiRequest(config = {}) {
   try {
-    const requestBase = new URL(config.baseURL || apiBaseURL, window.location.origin);
-    const rawURL = config.url || '';
-    const absoluteURL = /^[a-z][a-z\d+.-]*:/i.test(rawURL) || rawURL.startsWith('//');
-    const target = absoluteURL
-      ? new URL(rawURL, requestBase)
-      : new URL(
-          `${requestBase.pathname.replace(/\/+$/, '')}/${rawURL.replace(/^\/+/, '')}`,
-          requestBase.origin
-        );
-
+    const target = resolveRequestTarget(config);
     return (
       target.origin === apiBase.origin &&
       (trustedApiPath === '/' ||
@@ -53,9 +56,20 @@ function isTrustedApiRequest(config = {}) {
   }
 }
 
+function isLoginRequest(config = {}) {
+  try {
+    const target = resolveRequestTarget(config);
+    const loginPath = `${trustedApiPath === '/' ? '' : trustedApiPath}/auth/login` || '/auth/login';
+    return target.origin === apiBase.origin &&
+      target.pathname.replace(/\/+$/, '') === loginPath;
+  } catch {
+    return false;
+  }
+}
+
 api.interceptors.request.use((config) => {
   const headers = config.headers || {};
-  if (isTrustedApiRequest(config)) {
+  if (isTrustedApiRequest(config) && !isLoginRequest(config)) {
     const token = safeStorageGet('asha_token');
     if (token) headers.Authorization = `Bearer ${token}`;
   } else if (typeof headers.delete === 'function') {
